@@ -7,26 +7,14 @@ exports.createMateri = async ({
     foto_materi,
     creator,
 }) => {
-    // Handle the case when "foto_materi" is a text
-    if (typeof foto_materi === "string") {
-        // Create "materi" with text
-        const { data, error } = await supabase.from("materi").insert([
-            {
-                jenis_materi,
-                nama_bab,
-                materinya,
-                foto_materi: null, // No file to upload
-                creator,
-            },
-        ]);
+    // Split the materinya text into an array using semicolon as the delimiter
+    let materiArray = materinya.split(";");
 
-        if (error) {
-            throw error;
-        }
+    // Initialize an array to store the URLs of the uploaded files
+    let foto_materi_urls = [];
 
-        return data[0];
-    } else {
-        // Handle the case when "foto_materi" is a file
+    // Iterate over each file in "foto_materi"
+    for (let i = 0; i < foto_materi.length; i++) {
         const filePath = `materi/${nama_bab}`;
         let imageUrl;
         const uniqueFilePath = await getUniqueFilePath(filePath);
@@ -34,7 +22,7 @@ exports.createMateri = async ({
         // Upload the file to the storage bucket
         const { data, error } = await supabase.storage
             .from("materi")
-            .upload(uniqueFilePath, foto_materi.buffer);
+            .upload(uniqueFilePath, foto_materi[i].buffer);
 
         if (error) {
             throw error;
@@ -42,28 +30,38 @@ exports.createMateri = async ({
 
         imageUrl = `https://wkewzdgfhqcwmrpdjnlv.supabase.co/storage/v1/object/public/materi/${uniqueFilePath}`;
 
-        // Create "materi" with the URL of the uploaded file
-        const { data: materiData, error: materiError } = await supabase
-            .from("materi")
-            .insert([
+        // Add the URL of the uploaded file to the array
+        foto_materi_urls.push(imageUrl);
+    }
+
+    // Create "materi" with the URLs of the uploaded files and the materinyaArray
+    const { data: materiData, error: materiError } = await supabase
+        .from("materi")
+        .insert(
+            [
                 {
                     jenis_materi,
                     nama_bab,
-                    materinya,
-                    foto_materi: imageUrl,
+                    materinya: materiArray, // Use "materiArray" here
+                    foto_materi: foto_materi_urls,
                     creator,
                 },
-            ]);
+            ],
+            { returning: "minimal" }
+        );
 
-        if (materiError) {
-            throw materiError;
-        }
+    if (materiError) {
+        throw materiError;
+    }
 
+    if (materiData && materiData.length > 0) {
         return materiData[0];
+    } else {
+        throw new Error("Insert operation was not successful");
     }
 };
 
-const getUniqueFilePath = async (filePath) => {
+const getUniqueFilePath = async (filePath, nama_bab) => {
     let uniqueFilePath = filePath;
     let i = 0;
 
@@ -180,4 +178,37 @@ exports.searchMateriByJenis = async (jenis_materi) => {
     }
 
     return data;
+};
+
+exports.deleteMateri = async (id) => {
+    // Fetch the "materi" to be deleted
+    const { data: materiData, error: fetchError } = await supabase
+        .from("materi")
+        .select("nama_bab")
+        .eq("id", id);
+
+    if (fetchError) {
+        throw fetchError;
+    }
+
+    // Delete the "materi" from the database
+    const { data: deleteData, error: deleteError } = await supabase
+        .from("materi")
+        .delete()
+        .eq("id", id);
+
+    if (deleteError) {
+        throw deleteError;
+    }
+
+    // Delete the corresponding storage bucket
+    const { data: bucketData, error: bucketError } = await supabase.storage
+        .from("materi")
+        .remove([`materi/${materiData[0].nama_bab}`]);
+
+    if (bucketError) {
+        throw bucketError;
+    }
+
+    return deleteData;
 };

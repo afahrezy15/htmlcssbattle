@@ -12,7 +12,7 @@ router.post(
     "/materi",
     authMiddleware,
     adminMiddleware,
-    upload.single("foto_materi"), // Handle file upload for "foto_materi"
+    upload.array("foto_materi"), // Handle file upload for "foto_materi"
     materiHandler.createMateri
 );
 // Create a route to get all "materi"
@@ -24,5 +24,11 @@ router.get(
     "/materi/search/:jenis_materi",
     authMiddleware,
     materiHandler.searchMateriByJenis
+);
+router.delete(
+    "/materi/:id",
+    authMiddleware,
+    adminMiddleware,
+    materiHandler.deleteMateri
 );
 module.exports = router;

@@ -5,12 +5,12 @@ exports.createMateri = async (req, res) => {
         const { jenis_materi, nama_bab, materinya, creator } = req.body;
         let foto_materi;
 
-        if (req.file) {
-            // If a file was uploaded, use it as "foto_materi"
-            foto_materi = req.file;
+        if (req.files) {
+            // If files were uploaded, use them as "foto_materi"
+            foto_materi = req.files;
         } else {
-            // If no file was uploaded, "foto_materi" should be a text or URL
-            foto_materi = req.body.foto_materi;
+            // If no files were uploaded, "foto_materi" should be a text or URL
+            foto_materi = [req.body.foto_materi];
         }
 
         // Call the repository function to create "materi"
@@ -22,7 +22,16 @@ exports.createMateri = async (req, res) => {
             creator,
         });
 
-        res.status(201).json(createdMateri);
+        // Debugging statements to check materiData and materiError
+        console.log("materiData:", createdMateri);
+
+        if (createdMateri && createdMateri.length > 0) {
+            res.status(201).json(createdMateri[0]);
+        } else {
+            res.status(500).json({
+                error: "Insert operation was not successful",
+            });
+        }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -97,6 +106,19 @@ exports.searchMateriByJenis = async (req, res) => {
         // Call the repository function to search "materi" by jenis_materi
         const materi = await materiRepository.searchMateriByJenis(jenis_materi);
         res.status(200).json(materi);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.deleteMateri = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Call the repository function to delete "materi"
+        const deletedMateri = await materiRepository.deleteMateri(id);
+
+        res.status(200).json(deletedMateri);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
