@@ -8,5 +8,8 @@ app.use(express.json());
 app.use(registerRoutes);
 app.use(profileRoutes);
 app.use(materiRoutes);
+app.get("/", (req, res) => {
+    res.send({ message: "Welcome to our API" });
+});
 
 app.listen(3000, () => console.log("Server started on port 3000"));
