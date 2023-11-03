@@ -105,7 +105,7 @@ exports.updateUserProgress = async (email, progressAttribute) => {
 
     // Increment the progress by 1
     const currentProgress = userData[0][progressAttribute] || 0;
-    const updatedProgress = (currentProgress + 1) / 20;
+    const updatedProgress = (currentProgress + 1) / 4;
 
     // Update the user's progress
     const { data, error } = await supabase
