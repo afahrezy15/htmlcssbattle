@@ -20,14 +20,19 @@ router.get("/materi", materiHandler.getAllMateri);
 
 // Create a route to get a specific "materi" by ID
 router.get("/materi/:id", materiHandler.getMateriById);
-router.get(
-    "/materi/search/:jenis_materi",
-    materiHandler.searchMateriByJenis
-);
+router.get("/materi/search/:jenis_materi", materiHandler.searchMateriByJenis);
 router.delete(
     "/materi/:id",
     authMiddleware,
     adminMiddleware,
     materiHandler.deleteMateri
 );
+
+router.put(
+    "/cover_photo/:id",
+    authMiddleware,
+    upload.single("foto_cover"),
+    materiHandler.updateCoverPhoto
+);
+
 module.exports = router;

@@ -3,15 +3,7 @@ const materiRepository = require("../repository/materiRepository");
 exports.createMateri = async (req, res) => {
     try {
         const { jenis_materi, nama_bab, materinya, creator } = req.body;
-        let foto_materi;
-
-        if (req.files) {
-            // If files were uploaded, use them as "foto_materi"
-            foto_materi = req.files;
-        } else {
-            // If no files were uploaded, "foto_materi" should be a text or URL
-            foto_materi = [req.body.foto_materi];
-        }
+        const foto_materi = req.files; // Use req.files to get the uploaded files
 
         // Call the repository function to create "materi"
         const createdMateri = await materiRepository.createMateri({
@@ -25,15 +17,16 @@ exports.createMateri = async (req, res) => {
         // Debugging statements to check materiData and materiError
         console.log("materiData:", createdMateri);
 
-        if (createdMateri && createdMateri.length > 0) {
-            res.status(201).json(createdMateri[0]);
+        if (createdMateri) {
+            res.status(201).json({ success: true, createdMateri });
         } else {
             res.status(500).json({
+                success: false,
                 error: "Insert operation was not successful",
             });
         }
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 };
 
@@ -119,6 +112,24 @@ exports.deleteMateri = async (req, res) => {
         const deletedMateri = await materiRepository.deleteMateri(id);
 
         res.status(200).json(deletedMateri);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.updateCoverPhoto = async (req, res) => {
+    try {
+        const id = req.params.id; // Assuming id is passed in the request parameters
+        const file = req.file;
+        const nama_bab = req.body.nama_bab; // Assuming nama_bab is in the request body
+
+        const result = await materiRepository.updateCoverPhoto(
+            id,
+            file,
+            nama_bab
+        );
+
+        res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
