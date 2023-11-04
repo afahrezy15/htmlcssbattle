@@ -16,13 +16,12 @@ router.post(
     materiHandler.createMateri
 );
 // Create a route to get all "materi"
-router.get("/materi", authMiddleware, materiHandler.getAllMateri);
+router.get("/materi", materiHandler.getAllMateri);
 
 // Create a route to get a specific "materi" by ID
-router.get("/materi/:id", authMiddleware, materiHandler.getMateriById);
+router.get("/materi/:id", materiHandler.getMateriById);
 router.get(
     "/materi/search/:jenis_materi",
-    authMiddleware,
     materiHandler.searchMateriByJenis
 );
 router.delete(
