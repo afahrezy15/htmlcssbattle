@@ -7,7 +7,7 @@ exports.createMateri = async ({
     foto_materi,
     creator,
 }) => {
-    // Split the materinya text into an array using semicolon as the delimiter
+    // Split the materinya text into an array using a semicolon as the delimiter
     let materiArray = materinya.split(";");
 
     // Initialize an array to store the URLs of the uploaded files
@@ -42,7 +42,7 @@ exports.createMateri = async ({
                 {
                     jenis_materi,
                     nama_bab,
-                    materinya: materiArray, // Use "materiArray" here
+                    materinya: materiArray,
                     foto_materi: foto_materi_urls,
                     creator,
                 },
@@ -211,4 +211,72 @@ exports.deleteMateri = async (id) => {
     }
 
     return deleteData;
+};
+
+exports.updateCoverPhoto = async (id, file) => {
+    // Fetch the `nama_bab` attribute from the materi table based on the provided `id`
+    const { data: materiData, error: materiError2 } = await supabase
+        .from("materi")
+        .select("nama_bab")
+        .eq("id", id);
+
+    if (materiError2) {
+        throw materiError2;
+    }
+
+    const nama_bab = materiData[0].nama_bab;
+
+    const getUniqueFilePath = async (filePath) => {
+        let uniqueFilePath = filePath;
+        let i = 0;
+
+        while (true) {
+            const { data: fileData, error } = await supabase.storage
+                .from("foto_cover")
+                .download(uniqueFilePath);
+
+            if (error) {
+                break;
+            }
+
+            i++;
+            uniqueFilePath = `foto_cover/${nama_bab}/${i}`;
+        }
+
+        return uniqueFilePath;
+    };
+
+    const filePath = `foto_cover/${nama_bab}/0`;
+    let imageUrl;
+    const uniqueFilePath = await getUniqueFilePath(filePath);
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("foto_cover")
+        .upload(uniqueFilePath, file.buffer);
+
+    if (uploadError) {
+        throw uploadError;
+    }
+
+    imageUrl = `https://wkewzdgfhqcwmrpdjnlv.supabase.co/storage/v1/object/public/foto_cover/${uniqueFilePath}`;
+
+    const { data: updateData, error: updateError } = await supabase
+        .from("materi")
+        .update({ foto_cover: imageUrl })
+        .eq("id", id);
+
+    if (updateError) {
+        throw updateError;
+    }
+
+    const { data: updatedMateriData, error: materiError } = await supabase
+        .from("materi")
+        .select()
+        .eq("id", id);
+
+    if (materiError) {
+        throw materiError;
+    }
+
+    return updatedMateriData[0];
 };

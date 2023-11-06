@@ -30,4 +30,12 @@ router.delete(
     adminMiddleware,
     materiHandler.deleteMateri
 );
+
+router.put(
+    "/cover_photo/:id",
+    authMiddleware,
+    upload.single("foto_cover"),
+    materiHandler.updateCoverPhoto
+);
+
 module.exports = router;
