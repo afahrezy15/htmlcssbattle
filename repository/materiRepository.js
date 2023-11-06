@@ -191,6 +191,8 @@ exports.deleteMateri = async (id) => {
         throw fetchError;
     }
 
+    const nama_bab = materiData[0].nama_bab;
+
     // Delete the "materi" from the database
     const { data: deleteData, error: deleteError } = await supabase
         .from("materi")
@@ -201,13 +203,22 @@ exports.deleteMateri = async (id) => {
         throw deleteError;
     }
 
-    // Delete the corresponding storage bucket
-    const { data: bucketData, error: bucketError } = await supabase.storage
-        .from("materi")
-        .remove([`materi/${materiData[0].nama_bab}`]);
+    // Delete the corresponding "foto_materi" folder from the "diatas" bucket storage
+    const { error: fotoMateriError } = await supabase.storage
+        .from("diatas")
+        .remove([`foto_materi/${nama_bab}`]);
 
-    if (bucketError) {
-        throw bucketError;
+    if (fotoMateriError) {
+        throw fotoMateriError;
+    }
+
+    // Delete the corresponding "foto_cover" folder from the "foto_cover" bucket storage
+    const { error: fotoCoverError } = await supabase.storage
+        .from("foto_cover")
+        .remove([`foto_cover/${nama_bab}`]);
+
+    if (fotoCoverError) {
+        throw fotoCoverError;
     }
 
     return deleteData;
