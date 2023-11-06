@@ -22,13 +22,13 @@ const loginUser = async (req, res) => {
     try {
         const userData = req.body;
         const loginData = await userRepository.loginUser(userData);
-        console.log(userData);
         res.status(200).json({
             message: `User logged in`,
             user: loginData.user,
             token: loginData.token,
         });
     } catch (error) {
+        console.log(error);
         res.status(400).json({
             message: `Failed to log in user: ${error.message}`,
         });

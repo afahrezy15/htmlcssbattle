@@ -19,7 +19,7 @@ router.post(
 router.get("/materi", materiHandler.getAllMateri);
 
 // Create a route to get a specific "materi" by ID
-router.get("/materi/:id", materiHandler.getMateriById);
+router.get("/materi/:id", authMiddleware, materiHandler.getMateriById);
 router.get(
     "/materi/search/:jenis_materi",
     materiHandler.searchMateriByJenis
