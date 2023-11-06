@@ -54,8 +54,8 @@ const loginUser = async (userData) => {
     const { data, error } = await supabase
         .from("user")
         .select("*")
-
-    console.log(data);
+        .eq("email", userData.email)
+        .single();
 
     if (error) {
         console.log(error);
