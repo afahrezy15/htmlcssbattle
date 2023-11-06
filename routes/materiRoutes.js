@@ -11,7 +11,6 @@ const { auth } = require("../utils/supabase");
 router.post(
     "/materi",
     authMiddleware,
-    adminMiddleware,
     upload.array("foto_materi"), // Handle file upload for "foto_materi"
     materiHandler.createMateri
 );
