@@ -40,8 +40,7 @@ const createUser = async (userData) => {
     });
 
     return {
-        username: userData.username,
-        email: userData.email,
+        user: userData,
         token: token,
     };
 };
